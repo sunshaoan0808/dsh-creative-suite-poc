@@ -1,8 +1,10 @@
 # HOST-INTEGRATION.md — host 需提供的 slot / services / 路由契约清单 (P0-3)
 
-> 范围：只列 host ↔ POC 的集成契约。POC 侧业务代码逻辑一律不改；
+> **STATUS (2026-09-25):** 本文保留 host 集成协商历史；P0-3 / P0-5 / P0-6 / P0-7 现已 Done。
+> 当前状态以 `docs/GAP.md` 和 `docs/VERSION-MATRIX.md` 为准，host 侧真正剩余的是 P0-1 正式版本矩阵发布。
+>
+> 范围：只列 host ↔ POC 的集成契约。POC 侧业务代码逻辑不改；
 > 未落定的 host 能力标为 HOST-TODO，由 host 确认后再推进。
-> 现状背景见 `docs/GAP.md`（P0-3 / P0-5 为 Partial），本文件不重复 GAP 结论。
 
 POC 实际挂载代码：`lib/client.js` 末尾 `apply(ctx)`；包元数据：`package.json` (`dsh.*`)；
 host 行声明 stub：`cordis.patch.yml`。
@@ -23,18 +25,15 @@ host 行声明 stub：`cordis.patch.yml`。
 ## 2. `ctx.inject` / services 契约
 
 - POC 唯一依赖：**`ctx.slots`**（`lib/client.js`: `const inject = ['slots']`）。
-- ⚠️ 已知不一致（只记录、不改代码）：`package.json` 中 `dsh.client.inject` 目前为 `[]`。
-  **HOST-TODO-5**：host 解析依赖时以 `lib/client.js` 的 `inject = ['slots']` 为准；
-  待双方确认后，再由后续任务把 `package.json` 补齐为 `["slots"]`（不在本次 P0-3 范围内）。
+- ✅ 已修正：`package.json` 中 `dsh.client.inject` 现为 `["slots"]`，与 `lib/client.js` 一致。
 - POC 不依赖 `ctx.llm` 以外的模型服务（生成走 DSH 默认模型，GAP P0-4 Done）、不依赖数据库/队列等其他服务。
 
 ## 3. 路由 / webServer 契约
 
-- POC **无自有服务端路由**：`lib/index.js` 为纯本地能力（资源 schema、helper-runtime、转换器、story 解析），
-  `bin/dsh-creative-suite.mjs` 只做 profile 检查与 smoke，不起端口、不注册路由。
-- 结论：P0 阶段 host **不需要**提供 webServer 挂载前缀。
-- **HOST-TODO-4**：若未来 POC 需要服务端路由（如诊断页 UI），host 再定义 prefix 规则
-  （建议形如 `/plugins/creative-suite/*`），届时另起任务对接。
+- POC **已有服务端路由**：`lib/index.js` 通过 `webServer.register` 注册
+  `/plugins/creative-suite/*`（资源、Story、MuseAI、Tavern、Helper Runtime、诊断等）。
+- host 需保证 `webServer.register` 的 prefix 语义与现有 host 一致。
+- `bin/dsh-creative-suite.mjs` 只做 profile 检查 / smoke / migration / fusion，不起独立端口。
 
 ## 4. 环境契约：`DSH_HOME`
 

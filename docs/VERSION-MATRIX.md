@@ -1,6 +1,6 @@
 # DSH Creative Suite POC — Version Matrix (P0-1)
 
-POC version: **0.17.0** (`package.json:2-3`).
+POC version: **0.17.1** (`package.json:2-3`).
 
 Scope: everything below is **POC-local and grep-verified** inside this repo.
 Anything the DSH host must own/confirm is listed under
@@ -11,7 +11,7 @@ pin or publish the host side.
 
 | Item | Declared | Resolved (lockfile) |
 |---|---|---|
-| POC package | `dsh-creative-suite-poc@0.17.0` (`package.json`) | — |
+| POC package | `dsh-creative-suite-poc@0.17.1` (`package.json`) | — |
 | lockfile | `package-lock.json`, lockfileVersion **3**, 14 packages | — |
 | `ajv` (dependencies) | `^8.20.0` | **8.20.0** (`node_modules/ajv`) |
 | `playwright` (dependencies) | `^1.63.0` | **1.63.0** (`node_modules/playwright`) |
@@ -35,7 +35,7 @@ cordis/react at runtime. The POC cannot pin the host side.
 - 9 resource kinds (`RESOURCE_KINDS`): `cards, worldbooks, presets, styles,
   novels, scripts, summaries, sessions, stories`.
 - `lib/migrator.js`: legacy migration entry; per-item `version: item.version || 1`;
-  migrated payload's store `version` falls back to `'0.17.0'` string when the
+  migrated payload's store `version` falls back to `'0.17.1'` string when the
   legacy store has no version (see §5 note).
 
 ## 4. Resource schema version (data contract)
@@ -55,7 +55,7 @@ registration) returns:
 {
   "ok": true,
   "name": "DSH Creative Suite POC",
-  "version": "0.17.0",
+  "version": "0.17.1",
   "storageDomain": "creative-suite",
   "modes": ["coding", "tavern", "museai", "story"],
   "store": { "file": "<dshHome>/storages/creative-suite.json", "resources": { "<kind>": <count> } }
@@ -64,7 +64,7 @@ registration) returns:
 
 Field notes:
 
-- `version` — hard-coded `'0.17.0'` string in the handler. Must be
+- `version` — hard-coded `'0.17.1'` string in the handler. Must be
   cross-checked against the host's installed bundle version, not trusted
   blindly (see host pending items).
 - `storageDomain` — POC-declared storage domain identifier
@@ -83,7 +83,7 @@ Field notes:
 
 ## 6. Related version touchpoints
 
-- `lib/migrator.js` — `store.version = legacyStore.version || '0.17.0'`
+- `lib/migrator.js` — `store.version = legacyStore.version || '0.17.1'`
   (string fallback for legacy payloads without a version; note this differs
   in type from numeric `STORE_VERSION = 1` and is normalized on next read).
 - Tavern gameplay capabilities proxy:
@@ -100,7 +100,7 @@ Field notes:
 > 2026-09-25 host实测（/root/dsh-deploy, DSH_HOME=/root/.dsh）：
 > - host `@deepseek-ai/dsh` = **0.1.0-rc.8**；web-app bundle = **0.1.0-rc.8**；
 >   cordis peer解析 = **4.0.1**；react = **18.3.1**；POC peer ranges（cordis ^4.0.1 / react ^18.2.0）全兼容。
-> - `GET /plugins/creative-suite/status` live返回 `version 0.17.0 + storageDomain creative-suite`，store路径确认。
+> - `GET /plugins/creative-suite/status` live返回 `version 0.17.1 + storageDomain creative-suite`，store路径确认。
 > - host无顶层app view概念（40 slot零命中），P0-3上限即conversation.view；host无全局mode系统，P0-6上限即in-view switcher。
 > 剩余需host发布：正式版本矩阵文档、storageDomain quota/归属、统一诊断UI放置。
 
@@ -109,7 +109,7 @@ Field notes:
    by the DSH host.
 2. Actual resolved `@deepseek-ai/cordis` / `react` versions at runtime
    (POC declares `^` ranges only).
-3. Cross-check of the hard-coded `GET /status` `version: '0.17.0'` against the
+3. Cross-check of the hard-coded `GET /status` `version: '0.17.1'` against the
    host's installed bundle version.
 4. Storage-domain confirmation: canonical `DSH_HOME`/data-root (POC assumes
    `process.env.DSH_HOME || ~/.dsh`), sanctioned path for

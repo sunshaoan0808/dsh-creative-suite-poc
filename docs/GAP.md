@@ -35,7 +35,7 @@ Missing   还没开始
 | P1-7 资源血缘 v1 | Done | lineageGraphFor支持derivedFrom/basedOn、节点边类型、循环缺失标记、maxDepth截断，GET graph可用 |
 | P1-8 数据迁移 | Done | migrator.js+POST migrate/all-v2，测试3/3，线上200 |
 
-验收差距：**同一份资源跨 Tavern / MuseAI / Story 可见已做到 POC，但资产治理未完成。**
+验收差距：**统一资源 schema、互转、version/diff/rollback 与迁移后端已完成；剩余为 host 侧正式确认、迁移向导 UI 与正式安全审计。**
 
 ## Phase 2：Story → MuseAI 蒸馏
 
@@ -52,7 +52,7 @@ Missing   还没开始
 | P2-9 卡片静态校验 | Done | 有校验报告 |
 | P2-10 一键导入 Tavern | Done | 已验证 |
 
-验收差距：**小说 → 世界书 + 人物卡 → Tavern 已闭环；小说 → 剧本 → MuseAI 冒险未闭环。**
+验收差距：**小说 → 世界书 → 人物卡 → Tavern 与剧本 → MuseAI 冒险均已闭环；剩余为质量门槛与发布硬化。**
 
 ## Phase 3：MuseAI 原生接入
 
@@ -67,7 +67,7 @@ Missing   还没开始
 | P3-7 文风 / 记忆 | Done | 已验证（文风 tab） |
 | P3-8 数据域迁移 | Done | 已验证（迁移按钮） |
 
-验收差距：**MuseAI 五页有原型，但还不是完整伴侣 / 冒险工作台。**
+验收差距：**MuseAI 五页、设置、羁绊、文风与迁移均已有 POC；剩余为产品化细节与真实浏览器验收。**
 
 ## Phase 4：Story 原生接入
 
@@ -86,7 +86,7 @@ Missing   还没开始
 | P4-11 视频工作台 | Done | 具备完整解说脚本生成/审稿/去AI味流程 |
 | P4-12 媒体生产确认 | Done | 已通过CONFIRMATION.md验证短剧/游戏/视频到媒体生产的流程 |
 
-验收差距：**生成能力有了，专业工作台体系没有。**
+验收差距：**Skill / Role / Tool / 文件协议 / 审稿 / 去 AI 味 / 生产确认均已接入；剩余为 host 正式发布与 CI 回归。**
 
 ## Phase 5：Tavern 兼容层原生化
 
@@ -103,7 +103,7 @@ Missing   还没开始
 | P5-9 Tavern UI | Done | 游玩页状态栏（人物/场景/状态·消息/忙闲/sessionPatch/helper）+小手机视图+浏览器卡提示，全量34/34 |
 | P5-10 兼容诊断 | Done | Tavern游玩页+卡片工作台均有统一兼容诊断面板，全量34/34 |
 
-验收差距：**简单卡和 Helper POC 已可用；复杂卡完整运行时仍未完成。**
+验收差距：**Helper / MVU / Session / UI / 诊断均已有 POC；复杂浏览器脚本卡仍依赖 headless browser runtime 或完整 shim。**
 
 ## Phase 6：反馈闭环与飞轮
 
@@ -117,7 +117,7 @@ Missing   还没开始
 | P6-6 资源血缘 | Done | import/worldbook支持lineage.derivedFrom落库，generate/card链式worldbook派生，novel->worldbook->card连通+maxDepth截断，test/lineage-graph.test.mjs 2/2+全量24/24通过 |
 | P6-7 版本对比 | Done | 通用资源版本历史 / 路径级 diff / 回滚已落地（PUT/PATCH 更新自动快照，versions/diff/rollback 路由 + test/resource-versions.test.mjs 2 用例通过） |
 
-验收差距：**飞轮 POC 已闭环；资产版本治理已闭环（版本历史 + 派生图）。**
+验收差距：**飞轮、资源版本治理与血缘图已闭环；剩余为发布层回归与 host 环境证据。**
 
 ## Phase 7：发布与硬化
 
@@ -132,33 +132,30 @@ Missing   还没开始
 | P7-7 文档 | Done | README/INSTALL/STATUS齐全非空，回归测试覆盖 |
 | P7-8 回归与发布 | Done | perf-docs-regression测试4/4，全量38/38 |
 
-验收差距：**能开发、能融合、能冒烟；离正式发布还有明显距离。**
+验收差距：**开发 / 融合 / 冒烟 / 回归测试已闭环；剩余为正式 Release、upgrade/rollback、迁移向导与 host 版本矩阵。**
 
-## 当前最硬的五个缺口
+## 当前真正剩余
 
 ```text
-1. 完整 Tavern Helper host API / 生命周期
-2. Headless Browser template runtime
-3. Story Skill / Role / Tool 专业工作台
-4. 真实浏览器 E2E
-5. 单包 Release / migration / regression
+1. Host 正式版本矩阵发布（P0-1）
+2. 正式 Release / tag / release notes（P7-1）
+3. 引导式迁移向导 UI（P7-3）
+4. 升级 / 回滚回归（P7-2）
+5. 可复现的真实浏览器 E2E 证据（P7-6）
+6. 文档与 CI 持续同步
 ```
 
-## 本轮相对上次的明确变化
+## 当前结论
 
 ```text
-已从“未落地”移出：
-- MVU 自动重试 / settlement watchdog
-- Helper Runtime 最小可执行引擎
-- Helper host API 子集
-- Helper runtime -> Tavern 双向同步
-- Session patch 握手
-- 主 web profile 融合
+核心功能已基本实现，GAP 表以 Done/Partial 为准。
+剩余是发布层与 host 层收口，不再是主体功能缺失。
 
-仍然未完成：
-- 完整 Helper 生命周期与 tool bridge
-- Headless Browser runtime
-- Story 专业 Skill/Role/Tool
-- 真实浏览器 E2E
-- 单包 Release
+真实剩余：
+- Host 版本矩阵发布
+- 正式 Release
+- 升级/回滚回归
+- 迁移向导 UI
+- 真实浏览器 E2E 证据统一
+- 文档/CI 同步
 ```

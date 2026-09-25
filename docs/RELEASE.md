@@ -9,18 +9,22 @@ node ./scripts/build-package.mjs
 
 ## Required Before Public Release
 
-- [ ] Single tarball build
-- [ ] Versioned release notes
-- [ ] Install / upgrade / rollback test
-- [ ] Data migration wizard
-- [ ] Security audit
-- [ ] Real browser E2E
-- [ ] Regression suite
-- [ ] Rollback instructions
+| Item | Status | Notes |
+|---|---|---|
+| Single tarball build | Done | `node scripts/build-package.mjs` creates a tarball |
+| Versioned release notes | Done | See `docs/RELEASE-NOTES-0.17.1.md` |
+| Install / upgrade / rollback test | Partial | install / fusion / smoke tested; full upgrade + rollback regression still open |
+| Data migration wizard | Partial | backend + CLI `migrate` exists; guided UI still open |
+| Security audit | Partial | quota / timeout / audit + SECURITY.md exist; external audit still open |
+| Real browser E2E | Partial | CI/build scripts and route-level E2E exist; target-host browser dependencies need reproducible evidence |
+| Regression suite | Done | `npm test` now runs `node --test test/*.test.mjs` |
+| Rollback instructions | Done | Fusion CLI prints backup + rollback command; INSTALL/FUSION-TEST document it |
 
 ## Current State
 
 - CLI install / smoke / fusion: working
-- Package build script: present
+- `npm test` / `npm run ci`: added
+- GitHub Actions workflow: added
+- Package build script: working
 - Main web profile fusion: applied
-- Browser E2E: blocked by missing Playwright system dependencies in this environment
+- Browser E2E: route-level evidence exists; target-host system dependency evidence still needs reconciliation

@@ -551,12 +551,17 @@ Novel -> Worldbook -> Character -> Card -> Tavern
 
 ## Not Done Yet
 
-- MuseAI pages as native views
-- Story workbenches
-- Tavern compatibility native runtime
-- Tavern play feedback -> next chapter loop
-- Production migration tooling
-- Full browser E2E in a real browser
+The remaining closure items are:
+
+- Host-published version matrix (P0-1)
+- Formal GitHub Release / tag / release notes (P7-1)
+- Full upgrade + rollback regression (P7-2)
+- Guided migration wizard UI (P7-3)
+- Formal external security audit (P7-4)
+- Reproducible real-browser E2E evidence in the target host environment (P7-6)
+- Decide whether `private: true` stays before publication
+
+CI, tests, docs, migration backend, helper runtime, Story/MuseAI/Tavern POCs and the main web fusion are now in place.
 
 ## Safety / Status
 

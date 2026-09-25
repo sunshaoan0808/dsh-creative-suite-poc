@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: node --check lib/index.js
+      - run: node --check lib/client.js
+      - run: node --check lib/helper-runtime.js
+      - run: node --check bin/dsh-creative-suite.mjs
+      - run: node scripts/build-package.mjs

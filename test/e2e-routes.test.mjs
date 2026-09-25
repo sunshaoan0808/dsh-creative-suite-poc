@@ -78,7 +78,7 @@ test('P7-6: route-level e2e — status/migrate/graph/museai-settings 全闭环',
   const status = await callRoute(handler, 'GET', '/plugins/creative-suite/status')
   assert.equal(status.status, 200)
   assert.equal(status.payload.ok, true)
-  assert.equal(status.payload.version, '0.17.0')
+  assert.equal(status.payload.version, '0.17.1')
   assert.ok(Array.isArray(status.payload.modes))
 
   // 2. 创建 story 项目 (端到端起点)

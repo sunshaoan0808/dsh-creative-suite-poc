@@ -158,13 +158,16 @@
 - Continue-writing outlines (POC)
 - New cards from play sessions (POC)
 
-## Next Engineering Steps
+## Remaining Closure Items
 
-1. Full Tavern Helper host API / lifecycle coverage
-2. Headless browser template runtime
-3. Story workbench-specific Skill / Role / Tool
-4. Real browser E2E
-5. Single-package release / migration / regression
+1. Publish the host-side version matrix (P0-1)
+2. Cut a formal GitHub Release / tag / release notes (P7-1)
+3. Add guided migration wizard UI (P7-3)
+4. Add full upgrade + rollback regression (P7-2)
+5. Reconcile and provide reproducible real-browser E2E evidence (P7-6)
+6. Keep README / STATUS / RELEASE / HOST-INTEGRATION / GAP synchronized
+
+The CI test workflow, npm test script, migration backend, helper runtime, Story/MuseAI/Tavern POCs and main web fusion are now in place.
 
 ## Full Tavern Compatibility Fallback
 
