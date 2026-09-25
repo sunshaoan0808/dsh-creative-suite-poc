@@ -96,12 +96,53 @@ test('N0-1: capabilities 本地返回，不依赖 tavern.log', async () => {
   assert.equal(res.payload.deprecated, false)
 })
 
-test('N0-1: 其它 gameplay 透传失败错误追加 native hint', async () => {
+test('N0-1: gameplay/cards 已本地化（不再透传）', async () => {
   const { handler } = await boot()
   const res = await callRoute(handler, 'GET', '/plugins/creative-suite/tavern/gameplay/cards')
-  assert.equal(res.status, 500)
-  assert.ok(String(res.payload.error).includes(NATIVE_HINT), `应追加 hint，实际: ${res.payload.error}`)
-  assert.ok(String(res.payload.error).includes('/native/turn'), `应指引 native/turn，实际: ${res.payload.error}`)
+  assert.equal(res.status, 200)
+  assert.equal(res.payload.ok, true)
+  assert.equal(res.payload.native, true)
+  assert.ok(Array.isArray(res.payload.cards))
+})
+
+test('N6: gameplay 全链路本地化（create→send→state→variables→candidates→cancel）', async () => {
+  const { handler } = await boot()
+  await seedCardWorldbook(handler)
+  const created = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/create', { cardId: 'n0-card' })
+  assert.equal(created.status, 200)
+  assert.equal(created.payload.ok, true)
+  assert.equal(created.payload.native, true)
+  const sid = created.payload.sessionId
+  assert.ok(sid)
+  const sent = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/send', { sessionId: sid, input: '你好' })
+  assert.equal(sent.status, 200)
+  assert.equal(sent.payload.native, true)
+  assert.equal(sent.payload.assistantMessage.content, '你好')
+  const state = await callRoute(handler, 'GET', `/plugins/creative-suite/tavern/gameplay/state?sessionId=${encodeURIComponent(sid)}`)
+  assert.equal(state.status, 200)
+  assert.equal(state.payload.native, true)
+  assert.equal(state.payload.runtime.messages.length, 2)
+  const vars = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/variables', { sessionId: sid, variables: { hp: 80 } })
+  assert.equal(vars.status, 200)
+  assert.equal(vars.payload.variables.hp, 80)
+  const cands = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/candidates', { sessionId: sid, count: 2 })
+  assert.equal(cands.status, 200)
+  assert.equal(cands.payload.items.length, 2)
+  const cancelled = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/cancel', { sessionId: sid })
+  assert.equal(cancelled.status, 200)
+  assert.equal(cancelled.payload.runtime.lifecycle, 'stopped')
+})
+
+test('N6: gameplay 缺参/无效会话语义（400/404）', async () => {
+  const { handler } = await boot()
+  const noCard = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/create', {})
+  assert.equal(noCard.status, 400)
+  const noSession = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/send', { input: 'hi' })
+  assert.equal(noSession.status, 400)
+  const missing = await callRoute(handler, 'POST', '/plugins/creative-suite/tavern/gameplay/send', { sessionId: 'nope', input: 'hi' })
+  assert.equal(missing.status, 404)
+  const missingState = await callRoute(handler, 'GET', '/plugins/creative-suite/tavern/gameplay/state?sessionId=nope')
+  assert.equal(missingState.status, 404)
 })
 
 // ---- N0-2: worldbook keys 激活 ----
