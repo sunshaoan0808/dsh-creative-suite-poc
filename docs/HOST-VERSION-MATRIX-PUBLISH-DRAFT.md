@@ -14,8 +14,8 @@ Status: **DRAFT，归属 host**。POC 侧实测已全部完成，只缺 host 确
 | `dsh-creative-suite-poc` | **0.17.0** | `GET /plugins/creative-suite/status` 返回 `version: '0.17.0'`（handler 硬编码，须与 host 安装 bundle 版本交叉核对，不盲信） | POC 侧完成，待 host 交叉核对机制 |
 | `STORE_VERSION`（文件 store 格式版） | — | POC `lib/index.js:16` `const STORE_VERSION = 1`；`normalizeStore()` 非 1 即回退空 store | POC 侧 pin |
 | `storageDomain` | — | POC `lib/index.js:24` `STORAGE_DOMAIN = 'creative-suite'`；文件 `<dshHome>/storages/creative-suite.json`（原子写 tmp+rename，ENOENT→空 store）＋ story 工程 `<dshHome>/profile-data/creative-suite/projects` | POC 侧声明；待 host 确认为 canonical（quota/归属/跨插件隔离/碰撞检查待发） |
-| Tavern gameplay capabilities `version`（API v） | **TBD（host live 填）** | POC 仅做代理：`GET /plugins/creative-suite/tavern/gameplay/capabilities → tavernGameplayRequest(dshHome,'capabilities')`（`lib/index.js:3479-3480`）；client 显示 `API v{capabilities.version}`（`lib/client.js:1646`） | host 填 live 值 |
-| `browserScriptRuntime` | **TBD（host live 填）** | POC 仅透传；client 按 `=== true` 判完整/兼容模式（`lib/client.js:1759-1760`） | host 填 live 值 |
+| Tavern gameplay capabilities `version`（API v） | **未填（2026-09-25 live 实测：端点可达但 Tavern 未运行）** | POC 仅做代理：`GET /plugins/creative-suite/tavern/gameplay/capabilities → tavernGameplayRequest(dshHome,'capabilities')`（`lib/index.js:3479-3480`）；client 显示 `API v{capabilities.version}`（`lib/client.js:1646`） | host 在 Tavern 运行环境下填 live 值 |
+| `browserScriptRuntime` | **未填（同上）** | POC 仅透传；client 按 `=== true` 判完整/兼容模式（`lib/client.js:1759-1760`） | host 在 Tavern 运行环境下填 live 值 |
 | modes | — | `['coding','tavern','museai','story']` 数据回显；in-repo 无全局 mode 系统（P0-6 上限即 in-view switcher，已拍板） | 上限确认 |
 | views | — | host 无顶层 app view 概念（40 slot 盘点零命中；P0-3 上限即 conversation.view order15 + sidebar 入口） | 上限确认 |
 | 诊断 | — | host 已验 status/models/helper 200，client bundle 含诊断 pane，settings 聚合诊断 live（P0-7 Done） | Done |
