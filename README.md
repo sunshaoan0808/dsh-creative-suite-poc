@@ -497,6 +497,7 @@ dsh --profile creative --port 3090 --no-open
 node ./bin/dsh-creative-suite.mjs status --profile creative
 node ./bin/dsh-creative-suite.mjs install --profile creative
 node ./bin/dsh-creative-suite.mjs smoke --profile creative
+node ./bin/dsh-creative-suite.mjs matrix --out docs/HOST-VERSION-MATRIX.md
 ```
 
 The smoke command starts a temporary DSH Web on a random port, waits for the authenticated URL, calls `/plugins/creative-suite/status`, prints the result and terminates the temporary process. See `docs/INSTALL.md`.

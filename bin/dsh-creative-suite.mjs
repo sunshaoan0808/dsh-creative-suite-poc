@@ -9,6 +9,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const PACKAGE_NAME = 'dsh-creative-suite-poc'
 const SCRIPT_PATH = fileURLToPath(import.meta.url)
 const PACKAGE_ROOT = path.resolve(path.dirname(SCRIPT_PATH), '..')
+const VERSION_MATRIX_MODULE = path.join(PACKAGE_ROOT, 'lib', 'version-matrix.js')
 const DSH_BIN = process.env.DSH_BIN || 'dsh'
 
 function dshHome() {
@@ -145,6 +146,44 @@ function fusion(profile, apply, linkMode = false) {
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+async function matrix(profile, outPath) {
+  const { buildVersionMatrix, renderVersionMatrixMarkdown } = await import(pathToFileURL(VERSION_MATRIX_MODULE).href)
+  const pkg = readJson(path.join(PACKAGE_ROOT, 'package.json'))
+  const dshResult = run(DSH_BIN, ['--version'], { capture: true })
+  const dshVersion = dshResult.status === 0 ? String(dshResult.stdout || '').trim() : null
+  let deps = {}
+  const npmResult = run('npm', ['ls', '--json', '--depth=0'], { capture: true, cwd: PACKAGE_ROOT })
+  try {
+    const parsed = JSON.parse(npmResult.stdout || '{}')
+    deps = parsed.dependencies || {}
+  } catch (_error) {}
+  let constants = {}
+  try {
+    constants = await import(pathToFileURL(path.join(PACKAGE_ROOT, 'lib', 'index.js')).href)
+  } catch (_error) {}
+  const value = buildVersionMatrix({
+    pocVersion: pkg.version,
+    nodeVersion: process.version,
+    dshVersion,
+    cordisVersion: deps['@deepseek-ai/cordis'] && deps['@deepseek-ai/cordis'].version || null,
+    reactVersion: deps.react && deps.react.version || null,
+    ajvVersion: deps.ajv && deps.ajv.version || null,
+    playwrightVersion: deps.playwright && deps.playwright.version || null,
+    storeVersion: constants.STORE_VERSION ?? null,
+    storageDomain: constants.STORAGE_DOMAIN || null,
+    tavernApiVersion: process.env.DSH_TAVERN_API_VERSION || null,
+    browserScriptRuntime: process.env.DSH_TAVERN_BROWSER_SCRIPT_RUNTIME || null
+  })
+  const markdown = renderVersionMatrixMarkdown(value)
+  if (outPath) {
+    writeFileSync(outPath, markdown)
+    console.log(outPath)
+  } else {
+    console.log(markdown)
+  }
+  return true
 }
 
 function dshAvailable() {
@@ -330,6 +369,7 @@ function usage() {
   dsh-creative-suite smoke --profile <name> [--port <number>] [--timeout <ms>]
   dsh-creative-suite smoke --profile <name> [--route-level]
   dsh-creative-suite fusion --profile <name> [--apply] [--link]
+  dsh-creative-suite matrix [--out <file>]
   dsh-creative-suite migrate --from <legacy.json> [--to <store.json>] [--dry-run]
 
 默认 profile：creative
@@ -352,6 +392,8 @@ async function main() {
   const from = fromIndex >= 0 ? args[fromIndex + 1] : null
   const toIndex = args.indexOf('--to')
   const to = toIndex >= 0 ? args[toIndex + 1] : null
+  const outIndex = args.indexOf('--out')
+  const outPath = outIndex >= 0 ? args[outIndex + 1] : ''
 
   if (action === 'status') process.exitCode = printStatus(profile) ? 0 : 1
   else if (action === 'install') process.exitCode = install(profile) ? 0 : 1
@@ -361,6 +403,8 @@ async function main() {
     try { process.exitCode = (await migrateStore(from, to, dryRun)) ? 0 : 1 } catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exitCode = 1 }
   } else if (action === 'fusion') {
     try { process.exitCode = fusion(profile, apply, linkMode) ? 0 : 1 } catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exitCode = 1 }
+  } else if (action === 'matrix') {
+    try { process.exitCode = (await matrix(profile, outPath)) ? 0 : 1 } catch (error) { console.error(error instanceof Error ? error.message : String(error)); process.exitCode = 1 }
   } else if (action === 'help' || action === '--help' || action === '-h') usage()
   else { usage(); process.exitCode = 2 }
 }

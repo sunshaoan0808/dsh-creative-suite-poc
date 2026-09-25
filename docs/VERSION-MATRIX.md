@@ -2,6 +2,12 @@
 
 POC version: **0.17.1** (`package.json:2-3`).
 
+Regenerate with:
+
+```sh
+node ./bin/dsh-creative-suite.mjs matrix --out docs/HOST-VERSION-MATRIX.md
+```
+
 Scope: everything below is **POC-local and grep-verified** inside this repo.
 Anything the DSH host must own/confirm is listed under
 [Host pending items](#host-pending-items-needs-dsh-host) — the POC cannot

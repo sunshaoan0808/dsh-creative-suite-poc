@@ -13,13 +13,15 @@
 
 ## Still Open
 
-- [ ] Publish host-side version matrix (P0-1)
-- [ ] Create formal GitHub Release / tag (P7-1)
+- [ ] Publish host-side version matrix (P0-1) — owner: host
+- [ ] Create formal GitHub Release / tag (P7-1) — owner: repo owner
 - [ ] Add guided migration wizard UI (P7-3)
 - [ ] Add upgrade + rollback regression (P7-2)
-- [ ] Provide reproducible target-host browser E2E evidence (P7-6)
-- [ ] Decide publication strategy for `private: true`
+- [ ] Provide reproducible target-host browser E2E evidence (P7-6) — owner: deployment
+- [ ] Decide publication strategy for `private: true` — owner: repo owner
 - [ ] Optional: replace `node:vm` with isolated worker sandbox
+
+External ownership and evidence requirements are listed in `docs/EXTERNAL-DEPENDENCIES.md`.
 
 ## Verification
 

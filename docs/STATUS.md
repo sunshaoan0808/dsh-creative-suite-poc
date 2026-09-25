@@ -6,6 +6,7 @@
 |---|---|
 | DSH native plugin skeleton | Done |
 | Installer / status / smoke CLI | Done |
+| Host/version matrix generator CLI | Done |
 | Automated profile smoke test | Done |
 | Host row | Done |
 | Browser half | Done |
@@ -168,6 +169,8 @@
 6. Keep README / STATUS / RELEASE / HOST-INTEGRATION / GAP synchronized
 
 The CI test workflow, npm test script, migration backend, helper runtime, Story/MuseAI/Tavern POCs and main web fusion are now in place.
+
+External ownership and evidence requirements are listed in `docs/EXTERNAL-DEPENDENCIES.md`.
 
 ## Full Tavern Compatibility Fallback
 

@@ -54,6 +54,14 @@ Optional:
 node ./bin/dsh-creative-suite.mjs smoke --profile creative --port 3091 --timeout 90000
 ```
 
+## Host / Version Matrix
+
+```sh
+node ./bin/dsh-creative-suite.mjs matrix --out docs/HOST-VERSION-MATRIX.md
+```
+
+Generates a host/poc version matrix. Host-owned fields remain `TBD` until the target host fills them.
+
 ## Package Script
 
 ```sh

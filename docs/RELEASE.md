@@ -20,6 +20,10 @@ node ./scripts/build-package.mjs
 | Regression suite | Done | `npm test` now runs `node --test test/*.test.mjs` |
 | Rollback instructions | Done | Fusion CLI prints backup + rollback command; INSTALL/FUSION-TEST document it |
 
+## External Dependencies
+
+See `docs/EXTERNAL-DEPENDENCIES.md` for host publication, push credential ownership, target-host browser E2E and external audit ownership.
+
 ## Current State
 
 - CLI install / smoke / fusion: working
