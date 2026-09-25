@@ -1,4 +1,46 @@
-# DSH Creative Suite Phase 0 host row.
+# DSH Creative Suite POC — host 行声明 (P0-3)。
+#
+# 本文件是声明式 patch stub：只描述 POC 希望 host 如何注册顶层 app view，
+# 不包含业务逻辑。实际挂载仍由 lib/client.js 的 apply(ctx) 执行
+# (ctx.slots.inject('conversation.view', ...) / ('sidebar.footer.action', ...))。
+# host 侧合并/解释本文件时的待确认项全部标为 HOST-TODO。
+#
+# 配套契约清单见 docs/HOST-INTEGRATION.md。
+
 - insert:
-    - id: creative-suite
+    # ---- app view 注册 ----
+    # HOST-TODO-1: 确认 host 是否提供顶层 app view 注册位。
+    #   当前 POC 挂在 `conversation.view` (order 15, label '创作')，
+    #   P0-3 目标是顶层 app view，需要 host 先确认 slot API 名称与签名。
+    #   在 host 确认前，本行保持现状：host 只需按 `slot` 字段挂载，
+    #   不要自行改写 id / order。
+    - id: creative-suite            # app view 唯一 id；与 client.js conversation.view 注册 id 一致
+      name: 'dsh-creative-suite-poc' # npm 包名；host 用它定位 bundle (package.json dsh.bundle.patch)
+      label: '创作'                  # tab/入口文案；与 client.js `label: () => '创作'` 一致
+      order: 15                     # 在 conversation.view 条目中的排序；与 client.js `order: 15` 一致
+      slot: 'conversation.view'     # 主挂载 slot；顶层 app view slot 待 host 确认后另起一行
+      # HOST-TODO-2: 顶层 app view slot 落定后，在此追加第二行
+      #   (如 slot: '<host-app-view-slot>', id 保持 creative-suite 不变)，
+      #   并确认 order 语义在新 slot 下是否仍然是数字越小越靠前。
+
+    # ---- 附属入口：sidebar 底部动作 ----
+    # HOST-TODO-3: 确认 `sidebar.footer.action` slot 存在且接受 { id, priority }。
+    #   POC 以 priority 998 注册 id `dsh-creative-suite-poc` 的轻量入口，
+    #   若 host 没有该 slot，允许 host 忽略本行（降级：只保留主 view）。
+    - id: dsh-creative-suite-poc
       name: 'dsh-creative-suite-poc'
+      label: '创作工作台'
+      slot: 'sidebar.footer.action'
+      priority: 998                   # 与 client.js sidebar 注册 priority 一致；越小越靠前请 host 确认
+      optional: true                  # host 若无此 slot 可跳过，不阻塞主 view
+
+# ---- host 待确认项总览 (明细见 docs/HOST-INTEGRATION.md) ----
+# HOST-TODO-4: 路由契约 — webServer 挂载前缀 (POC 无自有服务端路由，P0 阶段不需要)。
+# HOST-TODO-5: 服务契约 — ctx.inject 声明。
+#   注意：package.json dsh.client.inject 目前为 []，
+#   而 lib/client.js 声明 inject = ['slots']；host 以 client.js 为准，
+#   要求 host 提供 ctx.slots (inject/register)，其余服务 POC 均不依赖。
+# HOST-TODO-6: 环境契约 — DSH_HOME 解析规则 (POC 默认 $DSH_HOME 或 ~/.dsh)。
+# HOST-TODO-7: 存储契约 — storageDomain blessing。
+#   POC 现状是 $DSH_HOME/storages/creative-suite.json 直写文件 (见 GAP.md P0-5 Partial)，
+#   不是正式 storageDomain；host 授予 blessing 前，POC 不迁移、不改读写逻辑。
