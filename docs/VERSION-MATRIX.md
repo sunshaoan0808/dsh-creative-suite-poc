@@ -97,6 +97,13 @@ Field notes:
 
 ## Host pending items (needs DSH host)
 
+> 2026-09-25 host实测（/root/dsh-deploy, DSH_HOME=/root/.dsh）：
+> - host `@deepseek-ai/dsh` = **0.1.0-rc.8**；web-app bundle = **0.1.0-rc.8**；
+>   cordis peer解析 = **4.0.1**；react = **18.3.1**；POC peer ranges（cordis ^4.0.1 / react ^18.2.0）全兼容。
+> - `GET /plugins/creative-suite/status` live返回 `version 0.17.0 + storageDomain creative-suite`，store路径确认。
+> - host无顶层app view概念（40 slot零命中），P0-3上限即conversation.view；host无全局mode系统，P0-6上限即in-view switcher。
+> 剩余需host发布：正式版本矩阵文档、storageDomain quota/归属、统一诊断UI放置。
+
 1. Formal host↔POC version matrix (host version, supported cordis range,
    react range, API v, `browserScriptRuntime` flag) — must be owned/published
    by the DSH host.

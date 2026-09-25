@@ -12,12 +12,12 @@ Missing   还没开始
 
 | 任务 | 状态 | 当前说明 |
 |---|---|---|
-| P0-1 DSH 基线版本 | Partial | VERSION-MATRIX.md已建（lockfile pins+peer ranges+STORE_VERSION），host矩阵待确认 |
+| P0-1 DSH 基线版本 | Partial | POC侧完成（实测host版本已写入矩阵，peer全兼容）；缺host正式发布版本矩阵 |
 | P0-2 插件仓库骨架 | Done | Host / Browser / cordis patch 可安装 |
 | P0-3 四模式入口 | Done | host无顶层app view（40 slot盘点零命中），上限即conversation.view order15+sidebar入口，已达上限 |
 | P0-4 `ctx.llm` 模型桥 | Done | 所有生成走 DSH 默认模型 |
 | P0-5 `storageDomain` | Done | host live验证storageDomain=creative-suite，store路径确认，restart后生效 |
-| P0-6 模式切换器 | Partial | MODE_TAXONOMY单源对齐sidebar/workspace，全局taxonomy待host定 |
+| P0-6 模式切换器 | Done | host无全局mode系统，接受in-view switcher为上限（MODE_TAXONOMY单源，用户已拍板） |
 | P0-7 诊断页 | Done | host验status/models/helper200，client bundle含诊断pane，settings聚合诊断live |
 
 验收差距：**四模式可切换已完成 POC，但没有形成正式宿主级模式系统。**
