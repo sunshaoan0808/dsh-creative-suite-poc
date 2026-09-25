@@ -2,6 +2,29 @@
 
 > 修订目标：不再启动第二个 DSH / Tavern 服务，复杂 SillyTavern 人物卡也必须在当前 DSH 内直接运行。
 > 当前 bridge 方案只作为迁移兼容层，不作为最终形态。
+>
+> 源码对照基线（2026-09-25 已扒取验证）：
+>
+> ```text
+> A. flizzywine/dsh-tavern @ /tmp/src-dsh-tavern（main f821c100，plugin 2.1.0）
+>    tavern-plugin/lib/index.js 5053 行，中央 dispatchMethod + POST /api/dsh-tavern/<method>
+>    gameplay-api.js 119 行：capabilities → { version:1, transport:'production-session',
+>      browserScriptRuntime:false }（与 docs/TAVERN-BROWSER-RUNTIME-ASSESSMENT.md 一致，
+>      系上游真实返回值）
+> B. yejiming/dsh-museai-tavern @ /tmp/src-museai-tavern（HEAD a7a077a）
+>    0.0.1，tsdown 构建；conversation.view 注册 order 15（Trajectory 10 右、gomoku 20 左）
+>    与 POC 非同源（POC client.js 手写 createElement 189KB vs 上游 8.5MB antd/zustand bundle，
+>    零共享代码；POC MuseAIPane 仅 ~340 行占位）
+> C. zenstory-ai/oh-story-dsh @ /root/oh-story-dsh（@oh-story/dsh 0.1.0，dsh rc.8）
+>    client 仅 inject [slots]，走 conversation.session.header.actions split-bridge（src/client/index.tsx:516），
+>    不替换 conversation.view；无 game/video（仅 story+drama）；无 ctx.llm/ctx.database/migrator，
+>    模型走 subagents.spawn 继承，存储走会话 workspace 文件
+> ```
+>
+> 关键正名：POC 调的 `/api/dsh-tavern/*` 前缀正确，上游确有其路由；
+> POC 调的所有方法（gameplay.state/cancel/capabilities/cards/create/requests/send/candidates、
+> getSessionPatchStatus/confirmSessionPatch、importCard、Helper CRUD、regen/rollback/retry）上游全部存在，
+> 无 404。真正缺的是 live 服务本身（本机无 tavern profile、无 tavern.log），不是接口定义。
 
 ## 1. 总目标
 
@@ -183,6 +206,31 @@ persist to DSH storageDomain
 
 不能依赖 Tavern 的 `sessions.json` / `chats/` 作为唯一真源。
 
+复用来源（三方对照）：
+
+```text
+A. dsh-tavern（会话语义参考，不照搬存储）：
+   domain/chat-persistence.js createChatPersistence：chats/<chatId>.json，乐观 3-way merge
+   chat-journal-store 617 行 / round-history 651 行 / story-timeline 672 行： journal/回合/时间线
+   rollback-surface.js 546 行：回退面；candidate-generation/selection/tasks：候选任务；
+   turn-orchestration.js 756 行：回合编排；surface-restoration / session-events
+   注意：gameplay.* 只支持 test-<uuid> 自动化会话（gameplay-api.js:12,41），非生产聊天，
+   N0 必须新建生产级 native session engine，不可复用 gameplay 网关
+B. dsh-museai-tavern（存储与会话模式直接复用，src/domain.ts + src/routes.ts）：
+   museaiStore facade：MemoryMuseaiStore 即时可用 → ctx.get('storageDomain') 后升级
+     DomainMuseaiStore（memory-flush + close effect；lean-profile 回退 memory + warn）
+   SessionRecord：sessionKey('<kind>:<id>')，zod 校验，含 thinking/thinkingBlocks/tools/todos
+   路由：GET/PUT /store/<key>（envelope round-trip，空→{state:{},version:0}）、
+     GET /sessions/<kind>（摘要+messageCount）、GET/PUT/DELETE /sessions/<kind>/<id>
+   syncStorage.ts createSyncStorage：server envelope 优先 + localStorage 镜像双写迁移
+C. oh-story-dsh（存储纪律参考，不照搬 API）：
+   会话 workspace 文件即真源；sha256 版本 + 412 冲突 + 原子 tmp+rename + maxBytes；
+   路由只做窄前缀文件服务（/oh-story/file），绝不在路由里起 agents/runs/streams/models
+```
+
+POC 现状差距：POC 存储是 `$DSH_HOME/storages/creative-suite.json` 直接写（P0-5 Partial，
+无 blessing、无版本/冲突机制）。N0 按 B 建 StoreFacade + envelope，按 C 加版本/冲突/原子写纪律。
+
 ### 4.5 Model Adapter
 
 统一走：
@@ -200,6 +248,23 @@ ctx.llm.listModels
 第二个 baseURL 配置
 绕过 DSH approval
 ```
+
+复用来源（B. dsh-museai-tavern `src/routes.ts`，已验证可直接移植模式）：
+
+```text
+resolveModelTarget()：followDefault → ctx.agentDefaultModel.currentSelection()，否则显式 provider/model
+resolveReasoningEffort()：ctx.llm.resolveModelInfo + ReasoningEffortId（不支持则丢弃，gomoku 式）
+buildGenerateOptions()：{ provider, model, messages, system, temperature, maxTokens, reasoningEffort, signal }
+toLlmMessages()：createUserMessage / createAssistantMessage
+POST /plugins/museai/chat：ctx.llm.stream + BlockAssembler，NDJSON 事件
+  start/delta/thinking_delta/done{text,reasoning}/error/aborted，单请求超时 + 客户端断开 abort
+POST /plugins/museai/complete：assemble(stream) → { text, reasoning }（标题/归档/蒸馏用）
+GET /plugins/museai/models：listProviders/listModels 目录 { groups, failures } + defaultSelection
+ credential-free：只传 provider/model id 或 followDefault
+```
+
+POC 现状差距：POC 的 `generateText()`（lib/index.js）只有裸 `ctx.llm.stream` 调用，
+缺 reasoningEffort 映射、BlockAssembler NDJSON、models 目录、超时/abort 全套。N0 按上游补齐。
 
 ### 4.6 Regex + Display Engine
 
@@ -224,9 +289,24 @@ display projection
 edit projection
 ```
 
+复用来源（A. dsh-tavern，已验证文件清单）：
+
+```text
+tavern-regex-display.js：regex 脚本解析 + display 流水线
+tavern-macro-engine.js：{{user}}/{{char}}/{{persona}}/{{description}}/{{scenario}}/
+  {{personality}}/{{mes_example}}/{{time}}/{{date}}/{{random}} 等宏展开
+worldbook-*.js：activation / recall / library / filter / placement / search / snapshot /
+  version / bm25 / merge（activation 含 keys/constant/position/depth/role/should_scan/
+  group/probability/useProbability 全套语义）
+presetLibrary.updatePresetRegex：预设级 regex 更新
+```
+
+POC 现状差距：POC 只有 regex preview（P5-4），缺完整 ST regex 语义、worldbook activation、
+macro 全套、depth/order、三投影区分。N3 按上游移植。
+
 ### 4.7 Helper Runtime
 
-当前已有基础，需要补全：
+当前已有基础（POC lib/helper-runtime.js 333 行），需要补全：
 
 ```text
 event loop
@@ -241,6 +321,22 @@ macros
 toast/notify
 sandbox isolation
 ```
+
+复用来源（A. dsh-tavern `tavern-script-host-adapter.js` + `helper-generation/`，已验证可迁移核心逻辑）：
+
+```text
+tavern-script-host-adapter.js 762 行：Helper CRUD 完整实现
+  create/updateMessages, updatePrompts, updateVariables, saveChatData/ExtensionSettings/WorldInfo
+helper-generation/：tavern-helper-context（上下文传播）/ tavern-helper-scripts（脚本编译执行）
+  / tavern-helper-variable-macros（变量宏存储替换）/ tavern-helper-worldbook（世界书绑定查询）
+事件总线 on/emit/off + lifecycle 状态机；工具 register/call/unregister + 元数据；
+worldbook 只读视图；extension settings 持久化；toast/notify 队列；sandbox isolation
+```
+
+POC 现状差距：POC helper-runtime.js 只有基础函数（clone/getPath/setPath/resolveValue/renderText/
+templateBrowserStatus/renderCardTemplate/withMvuRetry/createSandbox/createHelperRuntime 等），
+缺事件循环、完整 lifecycle、variables/messages/prompts/tools 全量、worldbook 绑定、
+extension settings、toast/notify、健全 sandbox。N1 按上游补齐。
 
 安全目标：
 
@@ -271,6 +367,20 @@ status panel projection
 ```text
 即使没有 Tavern 服务，MVU 卡也能正常更新状态。
 ```
+
+复用来源（A. dsh-tavern `mvu-*` + `official-mvu-assets.js`，已验证文件清单）：
+
+```text
+mvu-conversion*.js：conversion / definition / guidance / inspection / tools / validation /
+  appearance / artifacts（卡 MVU 配置解析与转换）
+mvu-background-settlement.js 637 行：后台 settlement 主流程
+mvu-settlement-effect / mvu-settlement-reconciler：settlement 生效与对账
+mvu-schema.generated.js：schema 定义
+official-mvu-assets.js：官方 MVU 资源
+```
+
+POC 现状差距：POC 只有 withMvuRetry/isTransientMvuError（重试壳），缺 stat_data 读写、
+schema、settlement pipeline、status panel projection 全套。N2 按上游移植。
 
 ### 4.9 Browser Runtime
 
@@ -317,6 +427,28 @@ preset selector
 
 全部在 DSH `conversation.view` / slots 内，不 iframe 第二 DSH。
 
+复用来源（B + C 对照，2026-09-25 验证）：
+
+```text
+B. dsh-museai-tavern（视图注册模式直接复用）：
+   src/client/index.ts：inject=['slots','locale'] → locale NS 注册（zh/en）→
+     ctx.slots.inject('conversation.view', () => ctx.slots.register(
+       { name:'conversation.view', id:'museai', order:15,
+         label:() => t('tab.label'), locale:NS }, MuseAIView))
+   order 15 语义：Trajectory(10) 右、gomoku(20) 左；MuseAIView 用 antd Tabs 一次渲染一页，
+     后台状态放服务端，unmount/切页无损；.museai-view-active + [data-composer-seat] 藏原生 composer
+   POC 现状：POC client.js 用同 order 15 注册 id 'creative-suite'（概念继承），
+     但 MuseAIPane 仅 ~340 行占位表单，未移植上游 7k 行 pages+stores（Background 2034/Chat 1510/
+     Adventure 1914/Bond 856/Settings 737 行 + 6 zustand stores + 12 utils + 8 components）。
+     N0-N5 按需移植，不抄 8.5MB bundle
+C. oh-story-dsh（非破坏式挂载纪律参考）：
+   只 inject conversation.session.header.actions（order -100）+ tool.call.toolview，
+   用 CreativeSplitBridge portal 进官方 view 旁边，绝不替换 conversation.view；
+   无项目文件时只显示空引导（/story-setup、/short-drama），Chat/composer/store 照常归官方所有
+   POC 注意：POC 当前是替换式 conversation.view（与 oh-story 的 augment 式不同），
+     两者可共存（header.actions order -100 与 view order 15 不冲突），N6 前保持现状
+```
+
 ## 5. 分阶段计划
 
 ### Phase N0：抽掉 gameplay API 依赖
@@ -329,12 +461,14 @@ preset selector
 
 任务：
 
-- native session engine 最小版
-- DSH ctx.llm 正文生成
-- 卡字段 -> prompt
-- 世界书基础注入
-- helper runtime 挂到 native turn
-- native UI 显示正文
+- native session engine 最小版（按 §4.4：B 的 StoreFacade + SessionRecord + envelope，
+  C 的版本/冲突/原子写纪律；A 的 journal/回合语义参考）
+- DSH ctx.llm 正文生成（按 §4.5：B 的 resolveModelTarget/buildGenerateOptions/
+  reasoningEffort/models 目录/超时 abort 全套，不止裸 stream）
+- 卡字段 -> prompt（POC 已有 converters.js，按 B 的 toLlmMessages 对齐）
+- 世界书基础注入（按 A 的 worldbook-activation keys/constant 起步）
+- helper runtime 挂到 native turn（POC 已有 runtime/start + from-tavern/sync 去外部化）
+- native UI 显示正文（order 15 注册不变，按 B 的服务端持状态/unmount 无损）
 
 验收：
 
@@ -411,12 +545,12 @@ requiresBrowser 卡不再需要第二服务
 
 任务：
 
-- regen
-- rollback
-- undo rollback
-- candidate generation
-- edit message
-- branch
+- regen（对标 A. regenBody）
+- rollback（对标 A. rollback-surface.js 546 行 + rollbackTurn）
+- undo rollback（对标 A. undoRollbackTurn）
+- candidate generation（对标 A. candidate-generation/selection/tasks + gameplay candidates submitTask）
+- edit message（对标 A. updateTavernHelperMessages 本地化）
+- branch（对标 A. chat-journal-store / round-history 分支语义）
 
 验收：
 
