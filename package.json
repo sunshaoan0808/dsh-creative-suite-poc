@@ -1,0 +1,49 @@
+{
+  "name": "dsh-creative-suite-poc",
+  "version": "0.17.0",
+  "private": true,
+  "description": "DSH Creative Suite POC: native creative workspace with shared resources, MuseAI pages, Story files and Tavern bridge",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "react": "^18.2.0"
+  },
+  "license": "MIT",
+  "bin": {
+    "dsh-creative-suite": "./bin/dsh-creative-suite.mjs"
+  },
+  "files": [
+    "lib",
+    "bin",
+    "docs",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "scripts": {
+    "smoke": "node ./bin/dsh-creative-suite.mjs smoke --profile creative",
+    "e2e:browser": "node ./scripts/browser-e2e.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0",
+    "playwright": "^1.63.0"
+  }
+}

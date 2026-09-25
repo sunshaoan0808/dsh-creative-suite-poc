@@ -1,0 +1,4 @@
+# DSH Creative Suite Phase 0 host row.
+- insert:
+    - id: creative-suite
+      name: 'dsh-creative-suite-poc'
