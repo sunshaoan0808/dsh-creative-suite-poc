@@ -134,6 +134,30 @@ Missing   还没开始
 
 验收差距：**开发 / 融合 / 冒烟 / 回归测试已闭环；剩余为正式 Release、upgrade/rollback、迁移向导与 host 版本矩阵。**
 
+## Native Tavern Runtime（去第二服务）
+
+> 修订目标：复杂卡也必须在同一 DSH 内运行，彻底删除第二服务。
+
+详细计划：`docs/NATIVE-TAVERN-RUNTIME-PLAN.md`
+
+| 任务 | 状态 | 缺口 |
+|---|---|---|
+| N0 抽掉 gameplay API 依赖 | Missing | native session engine + DSH ctx.llm 正文生成 |
+| N1 完整 Helper Runtime | Partial | event loop / host API / sandbox 需补全 |
+| N2 MVU Runtime | Partial | settlement / schema / status panel 需补全 |
+| N3 Regex / Worldbook / Macro 完整化 | Partial | 完整 ST regex、worldbook activation、macro 未闭环 |
+| N4 Browser Runtime | Missing | HTML / DOM / 浏览器脚本卡运行时 |
+| N5 Session surface / candidates / rollback | Partial | 当前依赖 Tavern，需 native 实现 |
+| N6 数据迁移 + 去第二服务发布 | Missing | 关闭 3088 / 第二 profile 后全量兼容 |
+
+### 总验收
+
+```text
+关闭 Tavern 服务
+删除第二 profile
+在一个 DSH 内运行复杂 ST 卡
+```
+
 ## 当前真正剩余
 
 ```text

@@ -4,12 +4,22 @@ Phase 0-2 backend MVP for the DSH Creative Suite.
 
 ## Goal
 
-One DSH native plugin that can eventually host:
+One DSH native plugin that hosts:
 
 - Coding
 - Tavern
 - MuseAI
 - Story
+
+Final target (revised): **complex SillyTavern cards must run inside the same DSH without a second Tavern service or second DSH profile.**
+
+The current Tavern gameplay bridge is a migration layer, not the final architecture.
+
+See:
+
+```text
+docs/NATIVE-TAVERN-RUNTIME-PLAN.md
+```
 
 This POC already proves the content flywheel backend:
 

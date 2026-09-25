@@ -372,3 +372,40 @@ Tavern 子系统
   → 导入 Tavern
   → 最小游玩闭环
 ```
+
+
+---
+
+## 10. 修订目标：彻底去掉第二服务
+
+2026-09-25 修订：
+
+> 复杂卡也必须兼容，不能回退到第二个 DSH/Tavern 服务。
+
+因此 Phase 5 的目标从“兼容桥”升级为“DSH 内原生 Tavern 运行时”。
+
+详细工程计划见：
+
+```text
+docs/NATIVE-TAVERN-RUNTIME-PLAN.md
+```
+
+新增阶段：
+
+```text
+N0  抽掉 gameplay API 依赖
+N1  完整 Helper Runtime
+N2  MVU Runtime
+N3  Regex / Worldbook / Macro 完整化
+N4  Browser Runtime（HTML / JS / DOM 卡）
+N5  Session surface / candidates / rollback 原生
+N6  数据迁移 + 无第二服务发布
+```
+
+新验收标准：
+
+```text
+关闭 Tavern 服务
+删除第二 profile
+在一个 DSH 内运行复杂 ST 卡
+```

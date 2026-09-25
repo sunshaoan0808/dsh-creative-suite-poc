@@ -159,6 +159,18 @@
 - Continue-writing outlines (POC)
 - New cards from play sessions (POC)
 
+## Native Tavern Runtime（去第二服务）
+
+Detailed plan: `docs/NATIVE-TAVERN-RUNTIME-PLAN.md`
+
+- N0 Remove gameplay API dependency — Missing
+- N1 Complete Helper Runtime — Partial
+- N2 Complete MVU Runtime — Partial
+- N3 Full regex / worldbook / macro — Partial
+- N4 Browser runtime for HTML/DOM cards — Missing
+- N5 Native session surface / candidates / rollback — Partial
+- N6 Migration + no-second-service release — Missing
+
 ## Remaining Closure Items
 
 1. Publish the host-side version matrix (P0-1)
