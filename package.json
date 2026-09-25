@@ -20,7 +20,7 @@
     },
     "client": {
       "platform": "web",
-      "inject": []
+      "inject": ["slots"]
     }
   },
   "peerDependencies": {
